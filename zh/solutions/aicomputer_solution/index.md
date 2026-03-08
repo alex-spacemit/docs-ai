@@ -10,7 +10,7 @@ sidebar_position: 2
 - **语言支持**:
 - **提供功能**:
 
-[知了详细介绍](zenow.md)
+[知了详细介绍](https://www.spacemit.com/community/document/info?lang=zh&nodepath=software/SDK/bianbu/ai/zenow.md)
 
 ## 与会（yumeet）
 项目介绍
@@ -20,7 +20,7 @@ sidebar_position: 2
 - **语言支持**:
 - **提供功能**:
 
-[与会详细介绍](yumeet.md)
+[与会详细介绍](https://www.spacemit.com/community/document/info?lang=zh&nodepath=software/SDK/bianbu/ai/yumeet.md)
 
 ## 多模态视觉分析（灵狐）
 项目介绍
@@ -30,4 +30,4 @@ sidebar_position: 2
 - **语言支持**:
 - **提供功能**:
 
-[灵狐详细介绍](vlm.md)
+[灵狐详细介绍](https://www.spacemit.com/community/document/info?lang=zh&nodepath=software/SDK/bianbu/ai/vlm.md)
