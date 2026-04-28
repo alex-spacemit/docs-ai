@@ -52,8 +52,8 @@ export LD_LIBRARY_PATH=${PWD}/build/installed/lib:${LD_LIBRARY_PATH}
 
 ./build/bin/llama-cli \
   -m ./models/Qwen2.5-0.5B-Instruct-Q4_0.gguf \
-  -t 4 \
-  -p "介绍一下 SpacemiT RISC-V 平台。"
+  -p "介绍一下 SpacemiT RISC-V 平台。" \
+  -t 8 -c 16384 --no-mmap -ub 128 --warmup
 ~~~
 
 常用参数说明：
@@ -146,7 +146,8 @@ export LD_LIBRARY_PATH=/path/to/spacemit-ort/lib:./build/installed/lib:${LD_LIBR
 ./build/bin/llama-server \
   -m /path/to/model.gguf \
   --vision-backend smt \
-  --smt-config-dir /path/to/smt-config-dir
+  --smt-config-dir /path/to/smt-config-dir \
+  -t 8 -c 16384 --no-mmap -ub 128 --warmup
 ~~~
 
 > &#x2139;&#xfe0f;`--smt-config-dir` 目录下通常需要包含 `config.json` 以及对应的视觉 ONNX 模型文件。

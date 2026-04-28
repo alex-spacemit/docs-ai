@@ -8,18 +8,17 @@ sidebar_position: 7
 
 ---
 
-- [Triton](#triton)
-	- [简介](#简介)
-	- [与标准 Triton 的差异](#与标准-triton-的差异)
-	- [快速开始](#快速开始)
-	- [环境准备](#环境准备)
-	- [最小验证](#最小验证)
-	- [核心编程模型](#核心编程模型)
-	- [tl 基础](#tl-基础)
-	- [SMT 扩展](#smt-扩展)
-	- [Proton 性能分析](#proton-性能分析)
-	- [开发建议](#开发建议)
-	- [参考资源](#参考资源)
+- [简介](#简介)
+- [与标准 Triton 的差异](#与标准-triton-的差异)
+- [快速开始](#快速开始)
+- [环境准备](#环境准备)
+- [最小验证](#最小验证)
+- [核心编程模型](#核心编程模型)
+- [tl 基础](#tl-基础)
+- [SMT 扩展](#smt-扩展)
+- [Proton 性能分析](#proton-性能分析)
+- [开发建议](#开发建议)
+- [参考资源](#参考资源)
 
 ## 简介
 
@@ -36,13 +35,13 @@ sidebar_position: 7
 
 ```text
 Triton Python DSL
-	   ↓
+       ↓
    Triton IR (TTIR)
-	   ↓ (triton-to-linalg)
+       ↓ (triton-to-linalg)
    Linalg IR
-	   ↓ (spine-mlir)
+       ↓ (spine-mlir)
    LLVM IR
-	   ↓ (llc)
+       ↓ (llc)
    目标代码 (RISC-V)
 ```
 
@@ -122,12 +121,12 @@ SpacemiT Triton 保持了 Triton 的核心 DSL 语义，常见写法与社区版
 
 ```python
 block_ptr = tl.make_block_ptr(
-	base=ptr,
-	shape=[M, N],
-	strides=[stride_m, stride_n],
-	offsets=[pid_m * BLOCK_M, 0],
-	block_shape=[BLOCK_M, BLOCK_N],
-	order=[1, 0],
+    base=ptr,
+    shape=[M, N],
+    strides=[stride_m, stride_n],
+    offsets=[pid_m * BLOCK_M, 0],
+    block_shape=[BLOCK_M, BLOCK_N],
+    order=[1, 0],
 )
 
 data = tl.load(block_ptr, boundary_check=(0, 1))
@@ -150,64 +149,64 @@ tl.store(block_ptr, data, boundary_check=(0, 1))
 ```python
 @triton.jit
 def mm_kernel(
-	a_ptr, b_ptr, c_ptr,
-	M, N, K,
-	stride_am, stride_ak,
-	stride_bk, stride_bn,
-	stride_cm, stride_cn,
-	BLOCK_SIZE_M: tl.constexpr,
-	BLOCK_SIZE_N: tl.constexpr,
-	BLOCK_SIZE_K: tl.constexpr,
-	MICRO_M: tl.constexpr,
-	MICRO_K: tl.constexpr,
-	MICRO_N: tl.constexpr,
+    a_ptr, b_ptr, c_ptr,
+    M, N, K,
+    stride_am, stride_ak,
+    stride_bk, stride_bn,
+    stride_cm, stride_cn,
+    BLOCK_SIZE_M: tl.constexpr,
+    BLOCK_SIZE_N: tl.constexpr,
+    BLOCK_SIZE_K: tl.constexpr,
+    MICRO_M: tl.constexpr,
+    MICRO_K: tl.constexpr,
+    MICRO_N: tl.constexpr,
 ):
-	pid_m = tl.program_id(0)
-	pid_n = tl.program_id(1)
+    pid_m = tl.program_id(0)
+    pid_n = tl.program_id(1)
 
-	a_block_ptr = tl.make_block_ptr(
-		base=a_ptr,
-		shape=[M, K],
-		strides=[stride_am, stride_ak],
-		offsets=[pid_m * BLOCK_SIZE_M, 0],
-		block_shape=[BLOCK_SIZE_M, BLOCK_SIZE_K],
-		order=[1, 0],
-	)
-	b_block_ptr = tl.make_block_ptr(
-		base=b_ptr,
-		shape=[K, N],
-		strides=[stride_bk, stride_bn],
-		offsets=[0, pid_n * BLOCK_SIZE_N],
-		block_shape=[BLOCK_SIZE_K, BLOCK_SIZE_N],
-		order=[1, 0],
-	)
+    a_block_ptr = tl.make_block_ptr(
+        base=a_ptr,
+        shape=[M, K],
+        strides=[stride_am, stride_ak],
+        offsets=[pid_m * BLOCK_SIZE_M, 0],
+        block_shape=[BLOCK_SIZE_M, BLOCK_SIZE_K],
+        order=[1, 0],
+    )
+    b_block_ptr = tl.make_block_ptr(
+        base=b_ptr,
+        shape=[K, N],
+        strides=[stride_bk, stride_bn],
+        offsets=[0, pid_n * BLOCK_SIZE_N],
+        block_shape=[BLOCK_SIZE_K, BLOCK_SIZE_N],
+        order=[1, 0],
+    )
 
-	a = smt.view(
-		smt.descriptor_load(a_block_ptr, (0, 0)),
-		(0, 0),
-		(BLOCK_SIZE_M, BLOCK_SIZE_K),
-		(MICRO_M, MICRO_K),
-	)
-	b = smt.view(
-		smt.descriptor_load(b_block_ptr, (0, 0)),
-		(0, 0),
-		(BLOCK_SIZE_K, BLOCK_SIZE_N),
-		(MICRO_K, MICRO_N),
-	)
+    a = smt.view(
+        smt.descriptor_load(a_block_ptr, (0, 0)),
+        (0, 0),
+        (BLOCK_SIZE_M, BLOCK_SIZE_K),
+        (MICRO_M, MICRO_K),
+    )
+    b = smt.view(
+        smt.descriptor_load(b_block_ptr, (0, 0)),
+        (0, 0),
+        (BLOCK_SIZE_K, BLOCK_SIZE_N),
+        (MICRO_K, MICRO_N),
+    )
 
-	acc = smt.dot(a, b)
-	acc = smt.view(acc, (0, 0), (BLOCK_SIZE_M, BLOCK_SIZE_N), (1, 1))
-	c = acc.to(c_ptr.dtype.element_ty)
+    acc = smt.dot(a, b)
+    acc = smt.view(acc, (0, 0), (BLOCK_SIZE_M, BLOCK_SIZE_N), (1, 1))
+    c = acc.to(c_ptr.dtype.element_ty)
 
-	c_block_ptr = tl.make_block_ptr(
-		base=c_ptr,
-		shape=[M, N],
-		strides=[stride_cm, stride_cn],
-		offsets=[pid_m * BLOCK_SIZE_M, pid_n * BLOCK_SIZE_N],
-		block_shape=[BLOCK_SIZE_M, BLOCK_SIZE_N],
-		order=[1, 0],
-	)
-	tl.store(c_block_ptr, c, boundary_check=(0, 1))
+    c_block_ptr = tl.make_block_ptr(
+        base=c_ptr,
+        shape=[M, N],
+        strides=[stride_cm, stride_cn],
+        offsets=[pid_m * BLOCK_SIZE_M, pid_n * BLOCK_SIZE_N],
+        block_shape=[BLOCK_SIZE_M, BLOCK_SIZE_N],
+        order=[1, 0],
+    )
+    tl.store(c_block_ptr, c, boundary_check=(0, 1))
 ```
 
 从算子类型上看，推荐选择方式如下：
@@ -239,16 +238,16 @@ flags.instrumentation_on = True
 
 @triton.jit
 def my_kernel(...):
-	pl.enter_scope("load")
-	# ... load code ...
-	pl.exit_scope("load")
+    pl.enter_scope("load")
+    # ... load code ...
+    pl.exit_scope("load")
 
-	pl.enter_scope("compute")
-	# ... compute code ...
-	pl.exit_scope("compute")
+    pl.enter_scope("compute")
+    # ... compute code ...
+    pl.exit_scope("compute")
 
 with profiler.profile():
-	my_kernel[grid](...)
+    my_kernel[grid](...)
 ```
 
 如果只想快速看 kernel 级耗时分布，CPU 平台上还可以直接启用自动捕获：
